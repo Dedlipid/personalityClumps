@@ -148,10 +148,10 @@ class PersonalityProfile:
 
     def validate_value(self, value: Union[int, float]) -> float:
         """Ensure the value is between 0 and 1, or convert positive integers by dividing by 100."""
-        if isinstance(value, (int, float)) and 0 <= value <= 1:
-            return float(value)
-        elif isinstance(value, int) and value > 0:
-            return value / 100
+        if isinstance(value, float) and 0 < value <= 1:
+            return round(float(value) * 100)
+        elif isinstance(value, int) and value >= 0:
+            return value
         else:
             raise ValueError(
                 "Value must be a float between 0 and 1, or a positive integer."
@@ -164,17 +164,17 @@ class PersonalityProfile:
             features.append(values["overall"])
             features.extend(values["sub"].values())
         return features
-    
+
     def to_np_array(self) -> np.array:
         """Convert the profile to a numpy array for PCA analysis."""
         return np.array(self.extract())
-    
+
     def overall_to_np_array(self) -> np.array:
         """Convert the overall scores of the profile to a numpy array for PCA analysis."""
         return np.array([trait["overall"] for trait in self.profile.values()])
-    
+
     def excluding_overall_to_np_array(self) -> np.array:
         """Convert the profile to a numpy array excluding overall scores for PCA analysis."""
-        return np.array([trait["sub"].values() for trait in self.profile.values()]).flatten()
-
-
+        return np.array(
+            [trait["sub"].values() for trait in self.profile.values()]
+        ).flatten()

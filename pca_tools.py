@@ -1,10 +1,15 @@
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 
+
 def pca_analysis(
     data, dimension_names, n_components=3, indices=None, print_components=False
 ):
     """Performs PCA and sorts components by magnitude."""
+    if indices is not None:
+        data = data[:, indices]
+        dimension_names = [dimension_names[i] for i in indices]
+
     pca = PCA(n_components=n_components)
     transformed_data = pca.fit_transform(data)
     sorted_components = []
