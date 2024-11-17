@@ -3,3 +3,4 @@ pcaVenv/
 __pycache__/
 
 *.png
+*.txt
