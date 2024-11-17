@@ -37,6 +37,15 @@ dimension_names = [
     "liberalism",
 ]
 
+# Indices for overall scores
+overall_indices = [i for i, name in enumerate(dimension_names) if "overall" in name]
+
+# Indices excluding overall scores
+no_overall_indices = [
+    i for i in range(len(dimension_names)) if i not in overall_indices
+]
+
+# Define the template for the personality profile
 template = {
     "extraversion": {
         "overall": 0,

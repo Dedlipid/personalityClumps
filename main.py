@@ -1,44 +1,15 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 from personality_profile import PersonalityProfile
 from raw_data import names
-from general_data import dimension_names
-from pca_tools import pca_analysis, plot_pca, perform_pca_and_plot
-
-def extract_features(profile: PersonalityProfile) -> list:
-    """Extracts features from a personality profile for PCA."""
-    features = []
-    for trait, values in profile.items():
-        features.append(values["overall"])
-        features.extend(values["sub"].values())
-    return features
-
-
-
+from general_data import dimension_names, overall_indices, no_overall_indices
+from pca_tools import perform_pca_and_plot
 
 def main():
-    profiles = {key: PersonalityProfile(value) for key, value in names.items()}
-
     # Extract features for PCA
-    data = np.array(
-        [profile.to_np_array() for profile in profiles.values()]
-    )
-    labels = list(profiles.keys())
-
-    # Indices for overall scores
-    overall_indices = [i for i, name in enumerate(dimension_names) if "overall" in name]
-
-    # Indices excluding overall scores
-    no_overall_indices = [
-        i for i in range(len(dimension_names)) if i not in overall_indices
-    ]
+    data = [PersonalityProfile(profile).to_np_array() for profile in names.values()]
+    labels = list(names.keys())
 
     # Perform PCA and plot for each scenario
     perform_pca_and_plot(
-        data, dimension_names, labels, None, 2, "Full Vector", "full_vector"
-    )
-    perform_pca_and_plot(
         data,
         dimension_names,
         labels,
@@ -55,12 +26,10 @@ def main():
         2,
         "Excluding Overall",
         "no_overall",
+        print_components=True,
     )
 
     perform_pca_and_plot(
-        data, dimension_names, labels, None, 3, "Full Vector", "full_vector"
-    )
-    perform_pca_and_plot(
         data,
         dimension_names,
         labels,
@@ -77,6 +46,7 @@ def main():
         3,
         "Excluding Overall",
         "no_overall",
+        print_components=True,
     )
 
 
