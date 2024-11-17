@@ -4,16 +4,13 @@ from sklearn.decomposition import PCA
 from raw_data import names
 from general_data import dimension_names
 from personality_profile import PersonalityProfile
+from general_data import dimension_names, overall_indices, no_overall_indices
 
-def extract_overall_scores(data, dimension_names):
-  """Extracts only the overall scores from the data."""
-  overall_indices = [i for i, name in enumerate(dimension_names) if 'overall' in name]
-  return data[:, overall_indices]
 
 def plot_top_variance_components(data, labels, dimension_names, title, filename):
   """Plots the data on the three components with the highest variance."""
   # Extract overall scores
-  overall_data = extract_overall_scores(data, dimension_names)
+  overall_data = data[:, overall_indices]
 
   # Perform PCA
   pca = PCA()

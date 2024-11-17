@@ -1,4 +1,7 @@
-# Define dimension names
+import numpy as np
+from personality_profile import PersonalityProfile
+from raw_data import names
+
 dimension_names = [
     "agreeableness_overall",
     "altruism",
@@ -44,6 +47,9 @@ overall_indices = [i for i, name in enumerate(dimension_names) if "overall" in n
 no_overall_indices = [
     i for i in range(len(dimension_names)) if i not in overall_indices
 ]
+
+data = np.array([PersonalityProfile(profile).to_np_array() for profile in names.values()])
+labels = list(names.keys())
 
 # Define the template for the personality profile
 template = {
