@@ -168,5 +168,13 @@ class PersonalityProfile:
     def to_np_array(self) -> np.array:
         """Convert the profile to a numpy array for PCA analysis."""
         return np.array(self.extract())
+    
+    def overall_to_np_array(self) -> np.array:
+        """Convert the overall scores of the profile to a numpy array for PCA analysis."""
+        return np.array([trait["overall"] for trait in self.profile.values()])
+    
+    def excluding_overall_to_np_array(self) -> np.array:
+        """Convert the profile to a numpy array excluding overall scores for PCA analysis."""
+        return np.array([trait["sub"].values() for trait in self.profile.values()]).flatten()
 
 
