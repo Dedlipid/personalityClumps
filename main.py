@@ -12,6 +12,48 @@ def extract_features(profile):
         features.extend(values['sub'].values())
     return features
 
+def pca_analysis(data, dimension_names, n_components, indices=None):
+    """Performs PCA and sorts components by magnitude."""
+    if indices is not None:
+        data = data[:, indices]
+        dimension_names = [dimension_names[i] for i in indices]
+    
+    pca = PCA(n_components=n_components)
+    transformed_data = pca.fit_transform(data)
+    sorted_components = []
+    for component in pca.components_:
+        component_dict = {dim_name: dim_value for dim_name, dim_value in zip(dimension_names, component)}
+        sorted_component = dict(sorted(component_dict.items(), key=lambda item: abs(item[1]), reverse=True))
+        sorted_components.append({k: f"{v:.2f}" for k, v in sorted_component.items()})
+    return transformed_data, sorted_components
+
+def plot_2d(data, labels, title, filename):
+    """Plots 2D PCA results."""
+    plt.figure(figsize=(8, 6))
+    for i, label in enumerate(labels):
+        plt.scatter(data[i, 0], data[i, 1])
+        plt.text(data[i, 0], data[i, 1], label, fontsize=9, ha='right')
+    plt.title(title)
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.grid(True)
+    plt.savefig(filename)
+    plt.close()
+
+def plot_3d(data, labels, title, filename):
+    """Plots 3D PCA results."""
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    for i, label in enumerate(labels):
+        ax.scatter(data[i, 0], data[i, 1], data[i, 2])
+        ax.text(data[i, 0], data[i, 1], data[i, 2], label, fontsize=9, ha='right')
+    ax.set_title(title)
+    ax.set_xlabel('Principal Component 1')
+    ax.set_ylabel('Principal Component 2')
+    ax.set_zlabel('Principal Component 3')
+    plt.savefig(filename)
+    plt.close()
+
 def main():
     profiles = {
         key: PersonalityProfile(value) for key, value in names.items()
@@ -19,13 +61,7 @@ def main():
 
     # Extract features for PCA
     data = np.array([extract_features(profile.profile) for profile in profiles.values()])
-
-    # Perform PCA
-    pca_2d = PCA(n_components=2)
-    pca_3d = PCA(n_components=3)
-
-    data_2d = pca_2d.fit_transform(data)
-    data_3d = pca_3d.fit_transform(data)
+    labels = list(profiles.keys())
 
     # Define dimension names
     dimension_names = [
@@ -36,41 +72,29 @@ def main():
         "openness_overall", "adventurousness", "artistic_interests", "emotionality", "imagination", "intellect", "liberalism"
     ]
 
-    # Print PCA components with dimension names
-    print("2D PCA Components:")
-    for i, component in enumerate(pca_2d.components_):
-        component_dict = {dim_name: dim_value for dim_name, dim_value in zip(dimension_names, component)}
-        print(f"Component {i+1}: {component_dict}")
+    # Indices for overall scores
+    overall_indices = [i for i, name in enumerate(dimension_names) if 'overall' in name]
+    # Indices excluding overall scores
+    no_overall_indices = [i for i in range(len(dimension_names)) if i not in overall_indices]
 
-    print("\n3D PCA Components:")
-    for i, component in enumerate(pca_3d.components_):
-        component_dict = {dim_name: dim_value for dim_name, dim_value in zip(dimension_names, component)}
-        print(f"Component {i+1}: {component_dict}")
+    # Perform PCA and plot for each scenario
+    data_2d_full, _ = pca_analysis(data, dimension_names, 2)
+    plot_2d(data_2d_full, labels, '2D PCA of Personality Profiles (Full Vector)', '2d_pca_full_vector.png')
 
-    # Plot 2D PCA
-    plt.figure(figsize=(8, 6))
-    for i, (label, profile) in enumerate(profiles.items()):
-        plt.scatter(data_2d[i, 0], data_2d[i, 1])
-        plt.text(data_2d[i, 0], data_2d[i, 1], label, fontsize=9, ha='right')
-    plt.title('2D PCA of Personality Profiles')
-    plt.xlabel('Principal Component 1')
-    plt.ylabel('Principal Component 2')
-    plt.grid(True)
-    plt.savefig('2d_pca_personality_profiles.png')  # Save the 2D plot
-    plt.close()
+    data_2d_overall, _ = pca_analysis(data, dimension_names, 2, overall_indices)
+    plot_2d(data_2d_overall, labels, '2D PCA of Personality Profiles (Overall Scores Only)', '2d_pca_overall_scores.png')
 
-    # Plot 3D PCA
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    for i, (label, profile) in enumerate(profiles.items()):
-        ax.scatter(data_3d[i, 0], data_3d[i, 1], data_3d[i, 2])
-        ax.text(data_3d[i, 0], data_3d[i, 1], data_3d[i, 2], label, fontsize=9, ha='right')
-    ax.set_title('3D PCA of Personality Profiles')
-    ax.set_xlabel('Principal Component 1')
-    ax.set_ylabel('Principal Component 2')
-    ax.set_zlabel('Principal Component 3')
-    plt.savefig('3d_pca_personality_profiles.png')  # Save the 3D plot
-    plt.close()
+    data_2d_no_overall, _ = pca_analysis(data, dimension_names, 2, no_overall_indices)
+    plot_2d(data_2d_no_overall, labels, '2D PCA of Personality Profiles (Excluding Overall)', '2d_pca_no_overall.png')
+
+    data_3d_full, _ = pca_analysis(data, dimension_names, 3)
+    plot_3d(data_3d_full, labels, '3D PCA of Personality Profiles (Full Vector)', '3d_pca_full_vector.png')
+
+    data_3d_overall, _ = pca_analysis(data, dimension_names, 3, overall_indices)
+    plot_3d(data_3d_overall, labels, '3D PCA of Personality Profiles (Overall Scores Only)', '3d_pca_overall_scores.png')
+
+    data_3d_no_overall, _ = pca_analysis(data, dimension_names, 3, no_overall_indices)
+    plot_3d(data_3d_no_overall, labels, '3D PCA of Personality Profiles (Excluding Overall)', '3d_pca_no_overall.png')
 
 if __name__ == "__main__":
     main()
