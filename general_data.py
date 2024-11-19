@@ -1,6 +1,8 @@
 import numpy as np
 from personality_profile import PersonalityProfile
 from raw_data import names
+from raw_dark import dark_names
+
 
 dimension_names = [
     "agreeableness_overall",
@@ -40,6 +42,12 @@ dimension_names = [
     "liberalism",
 ]
 
+dark_dimension_names = [    
+    "narcissist",
+    "machievellian",
+    "psychopath",
+    "average"
+]
 # Indices for overall scores
 overall_indices = [i for i, name in enumerate(dimension_names) if "overall" in name]
 
@@ -50,6 +58,10 @@ no_overall_indices = [
 
 data = np.array([PersonalityProfile(profile).to_np_array() for profile in names.values()])
 labels = list(names.keys())
+
+# Dark Triad data
+dark_data = np.array([list(profile.values()) for profile in dark_names.values()])
+dark_labels = list(dark_names.keys())
 
 # Define the template for the personality profile
 template = {

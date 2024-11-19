@@ -1,58 +1,77 @@
+from general_data import dark_dimension_names, dark_data, dark_labels
+import plotly.express as px
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
-from raw_data import names
-from general_data import dimension_names
-from personality_profile import PersonalityProfile
-from general_data import dimension_names, overall_indices, no_overall_indices
 
 
-def plot_top_variance_components(data, labels, dimension_names, title, filename):
-  """Plots the data on the three components with the highest variance."""
-  # Extract overall scores
-  overall_data = data[:, overall_indices]
+def plot_top_variance_components(data, labels, dimension_names, title, filename, dim=3):
+    """Plots the first 'dim' components of each point in data.
+    Gives 3d interactive plot and a snapshot of the plot is saved as a png file.
+    """
 
-  # Perform PCA
-  pca = PCA()
-  pca.fit(overall_data)
+    if dim not in [2, 3]:
+        raise ValueError("dim must be 2 or 3")
+    
+        
 
-  # Get the indices of the top 3 components with the highest variance
-  top_indices = np.argsort(pca.explained_variance_)[-3:][::-1]
+    # Prepare axis labels
+    axis_labels = {
+        f"{axis}": name for axis, name in zip(["x", "y", "z"], dimension_names)
+    }
 
-  # Transform the data using these components
-  transformed_data = pca.transform(overall_data)[:, top_indices]
+    fig = px.scatter_3d(
+        x=data[:, 0],
+        y=data[:, 1],
+        z=data[:, 2],
+        text=labels,
+        color=labels,
+        title=title,
+        labels=axis_labels,
+    )
 
-  # Plot the data
-  fig = plt.figure(figsize=(10, 8))
-  ax = fig.add_subplot(111, projection='3d')
-  for i, label in enumerate(labels):
-      ax.scatter(transformed_data[i, 0], transformed_data[i, 1], transformed_data[i, 2])
-      ax.text(transformed_data[i, 0], transformed_data[i, 1], transformed_data[i, 2], label, fontsize=9, ha='right')
+    # Save the figure as an HTML file
+    fig.write_html(filename)
+    fig.show()
 
-  ax.set_xlabel(f'Component {top_indices[0] + 1}')
-  ax.set_ylabel(f'Component {top_indices[1] + 1}')
-  ax.set_zlabel(f'Component {top_indices[2] + 1}')
-  plt.title(title)
-  plt.grid(True)
-  plt.savefig(filename)
-  plt.close()
 
-# Example usage:
-# Assuming `data` is your dataset and `labels` are the labels for each data point
-# dimension_names = [...]  # List of dimension names
-# plot_top_variance_components(data, labels, dimension_names, "Top 3 Variance Components", "top_variance_components.png")
+def print_covariance_matrix(data, dimension_names):
+    """Prints the covariance matrix of the data."""
+    covariance_matrix = np.cov(data.T)
+    print("Covariance matrix:")
+    print("  " + "  ".join(dimension_names))
+    for i, row in enumerate(covariance_matrix):
+        print(dimension_names[i], end=" ")
+        for value in row:
+            print(f"{value:.2f}", end=" ")
+        print("")
+
+
+def print_correlation_matrix(data, dimension_names):
+    """Prints the correlation matrix of the data."""
+    correlation_matrix = np.corrcoef(data.T)
+    print("Correlation matrix:")
+    print("  " + "  ".join(dimension_names))
+    for i, row in enumerate(correlation_matrix):
+        print(dimension_names[i], end=" ")
+        for value in row:
+            print(f"{value:.2f}", end=" ")
+        print("")
+    
 
 def main():
-    profiles = {key: PersonalityProfile(value).overall_to_np_array() for key, value in names.items()}
-
-    # Load data
-    data = profiles.values()
-
-    labels = list(profiles.keys())
-    # Indices for overall scores
-    overall_indices = [i for i, name in enumerate(dimension_names) if "overall" in name]
-
-
-
+    # Ensure the filename has the correct extension
+    output_filename = "dark_triad.html"
     # Plot the top 3 variance components
-    plot_top_variance_components(data, labels, dimension_names, "Top 3 Variance Components", "top_variance_components.png")
+    plot_top_variance_components(
+        dark_data,
+        dark_labels,
+        dark_dimension_names[:3],
+        "Dark Triad Factors",
+        output_filename,
+        dim=3,
+    )
+    # Print the covariance matrix
+    print_correlation_matrix(dark_data, dark_dimension_names)
+
+
+if __name__ == "__main__":
+    main()

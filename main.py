@@ -27,7 +27,7 @@ def do_pca():
 
 def do_k_cluster_encoding():
   # Perform k-cluster encoding and draw the 3D visualization
-  perform_encoding_and_draw(data, labels, k=4)
+  perform_encoding_and_draw(data, labels, k=3)
 
 def main():
     # Perform PCA and plot for each scenario
